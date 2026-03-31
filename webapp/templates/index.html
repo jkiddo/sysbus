@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Livebox Dashboard</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #232733;
+  --border: #2e3345;
+  --text: #e1e4ed;
+  --text2: #8b90a0;
+  --accent: #f97316;
+  --accent2: #fb923c;
+  --green: #22c55e;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --radius: 10px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.header .status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+}
+
+.status-dot.connected { background: var(--green); }
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Auth panel */
+.auth-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.auth-panel h2 {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.auth-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.field input, .field select {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+
+.field input:focus, .field select:focus {
+  border-color: var(--accent);
+}
+
+.btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn:hover { opacity: 0.85; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 10px 18px;
+  font-size: 14px;
+  color: var(--text2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+
+.tab:hover { color: var(--text); }
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Cards */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.card h3 {
+  font-size: 13px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.card .value {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.card .sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+/* Panel (full width card) */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.panel-body { padding: 0; }
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+thead th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text2);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+tbody td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--surface2); }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-green { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge-red { background: rgba(239,68,68,0.15); color: var(--red); }
+.badge-blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+
+/* Tab content */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text2);
+}
+
+.spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Raw request */
+.raw-form {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px;
+}
+
+.raw-form input {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: monospace;
+  outline: none;
+}
+
+.raw-form input:focus { border-color: var(--accent); }
+
+pre.json-output {
+  padding: 16px 20px;
+  max-height: 400px;
+  overflow: auto;
+  font-size: 13px;
+  font-family: "SF Mono", "Fira Code", monospace;
+  color: var(--text2);
+  background: var(--bg);
+  margin: 0 16px 16px;
+  border-radius: 6px;
+}
+
+/* WiFi toggle row */
+.wifi-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .auth-form { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: 1fr; }
+}
+
+.mono { font-family: "SF Mono", "Fira Code", monospace; font-size: 13px; }
+.text-green { color: var(--green); }
+.text-red { color: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Livebox Dashboard</h1>
+  <div class="status">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Not connected</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Auth -->
+  <div class="auth-panel" id="authPanel">
+    <h2>Connection Settings</h2>
+    <div class="auth-form">
+      <div class="field">
+        <label>URL</label>
+        <input id="authUrl" value="http://192.168.1.1/" placeholder="http://192.168.1.1/">
+      </div>
+      <div class="field">
+        <label>Username</label>
+        <input id="authUser" value="admin">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="authPassword" type="password" placeholder="password">
+      </div>
+      <div class="field">
+        <label>Version</label>
+        <select id="authVersion">
+          <option value="lb4" selected>Livebox 4</option>
+          <option value="lb3">Livebox 3</option>
+          <option value="lb28">Livebox 2</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button class="btn btn-primary" onclick="doAuth()">Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="devices">Devices</button>
+    <button class="tab" data-tab="wifi">WiFi</button>
+    <button class="tab" data-tab="nat">NAT / Firewall</button>
+    <button class="tab" data-tab="calls">Phone Calls</button>
+    <button class="tab" data-tab="raw">Raw Request</button>
+  </div>
+
+  <!-- Overview tab -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="grid" id="overviewCards">
+      <div class="card">
+        <h3>Model</h3>
+        <div class="value" id="infoModel">--</div>
+        <div class="sub" id="infoVersion"></div>
+      </div>
+      <div class="card">
+        <h3>Uptime</h3>
+        <div class="value" id="infoUptime">--</div>
+        <div class="sub" id="infoReboots"></div>
+      </div>
+      <div class="card">
+        <h3>External IP</h3>
+        <div class="value mono" id="infoIP">--</div>
+      </div>
+      <div class="card">
+        <h3>DSL Downstream</h3>
+        <div class="value" id="dslDown">--</div>
+        <div class="sub">Mbit/s</div>
+      </div>
+      <div class="card">
+        <h3>DSL Upstream</h3>
+        <div class="value" id="dslUp">--</div>
+        <div class="sub">Mbit/s</div>
+      </div>
+      <div class="card">
+        <h3>Livebox Time</h3>
+        <div class="value mono" style="font-size:20px" id="lbTime">--</div>
+        <div class="sub" id="lbTimezone"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Connected Hosts</h2>
+        <button class="btn btn-outline" onclick="loadHosts()">Refresh</button>
+      </div>
+      <div class="panel-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>IP Address</th>
+              <th>MAC Address</th>
+              <th>Interface</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="hostsBody">
+            <tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Devices tab -->
+  <div class="tab-content" id="tab-devices">
+    <div class="panel">
+      <div class="panel-header">
+        <h2>All Devices</h2>
+        <button class="btn btn-outline" onclick="loadDevices()">Refresh</button>
+      </div>
+      <div class="panel-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>IP Address</th>
+              <th>MAC</th>
+              <th>Type</th>
+              <th>Active</th>
+              <th>First Seen</th>
+            </tr>
+          </thead>
+          <tbody id="devicesBody">
+            <tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- WiFi tab -->
+  <div class="tab-content" id="tab-wifi">
+    <div class="panel">
+      <div class="panel-header">
+        <h2>WiFi Networks</h2>
+        <div class="wifi-controls">
+          <button class="btn btn-success" onclick="wifiToggle(true)">Enable WiFi</button>
+          <button class="btn btn-danger" onclick="wifiToggle(false)">Disable WiFi</button>
+          <button class="btn btn-outline" onclick="loadWifi()">Refresh</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Interface</th>
+              <th>SSID</th>
+              <th>BSSID</th>
+              <th>Security</th>
+              <th>Passphrase</th>
+            </tr>
+          </thead>
+          <tbody id="wifiBody">
+            <tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>Static DHCP Leases</h2></div>
+      <div class="panel-body">
+        <table>
+          <thead>
+            <tr><th>MAC Address</th><th>IP Address</th></tr>
+          </thead>
+          <tbody id="dhcpBody">
+            <tr><td colspan="2" class="loading"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAT tab -->
+  <div class="tab-content" id="tab-nat">
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Port Forwarding Rules</h2>
+        <button class="btn btn-outline" onclick="loadNat()">Refresh</button>
+      </div>
+      <div class="panel-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Protocol</th>
+              <th>External Port</th>
+              <th>Internal Port</th>
+              <th>Destination IP</th>
+              <th>Enabled</th>
+            </tr>
+          </thead>
+          <tbody id="natBody">
+            <tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calls tab -->
+  <div class="tab-content" id="tab-calls">
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Call History</h2>
+        <button class="btn btn-outline" onclick="loadCalls()">Refresh</button>
+      </div>
+      <div class="panel-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Direction</th>
+              <th>Number</th>
+              <th>Date/Time</th>
+              <th>Duration</th>
+              <th>Type</th>
+            </tr>
+          </thead>
+          <tbody id="callsBody">
+            <tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raw request tab -->
+  <div class="tab-content" id="tab-raw">
+    <div class="panel">
+      <div class="panel-header"><h2>Raw Sysbus Request</h2></div>
+      <div class="raw-form">
+        <input id="rawPath" placeholder="e.g. DeviceInfo:get or NeMo.Intf.data:getMIBs" onkeydown="if(event.key==='Enter')doRaw()">
+        <input id="rawParams" placeholder='params JSON (optional) e.g. {"traverse":"all"}' onkeydown="if(event.key==='Enter')doRaw()">
+        <button class="btn btn-primary" onclick="doRaw()">Send</button>
+      </div>
+      <pre class="json-output" id="rawOutput">Response will appear here...</pre>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = '';
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+async function api(path, opts) {
+  const r = await fetch(API + path, opts);
+  return r.json();
+}
+
+function setConnected(ok) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  if (ok) {
+    dot.classList.add('connected');
+    txt.textContent = 'Connected';
+  } else {
+    dot.classList.remove('connected');
+    txt.textContent = 'Not connected';
+  }
+}
+
+// Auth
+async function doAuth() {
+  const data = {
+    url: document.getElementById('authUrl').value,
+    user: document.getElementById('authUser').value,
+    password: document.getElementById('authPassword').value,
+    version: document.getElementById('authVersion').value,
+  };
+  try {
+    const r = await api('/api/auth', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data),
+    });
+    if (r.error) {
+      alert('Auth failed: ' + r.error);
+      setConnected(false);
+    } else {
+      setConnected(true);
+      loadAll();
+    }
+  } catch (e) {
+    alert('Connection error: ' + e.message);
+    setConnected(false);
+  }
+}
+
+function formatUptime(seconds) {
+  const d = Math.floor(seconds / 86400);
+  const h = Math.floor((seconds % 86400) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (d > 0) return d + 'd ' + h + 'h';
+  if (h > 0) return h + 'h ' + m + 'm';
+  return m + 'm';
+}
+
+function protocolName(p) {
+  if (p === '6' || p === 'TCP') return 'TCP';
+  if (p === '17' || p === 'UDP') return 'UDP';
+  if (p === '6,17' || p === 'TCP/UDP') return 'TCP+UDP';
+  return p;
+}
+
+// Loaders
+async function loadInfo() {
+  try {
+    const info = await api('/api/info');
+    if (!info.error) {
+      setConnected(true);
+      document.getElementById('infoModel').textContent = info.ProductClass || info.ModelName || '--';
+      document.getElementById('infoVersion').textContent = info.SoftwareVersion || '';
+      document.getElementById('infoIP').textContent = info.ExternalIPAddress || '--';
+      if (info.UpTime) {
+        document.getElementById('infoUptime').textContent = formatUptime(info.UpTime);
+        document.getElementById('infoReboots').textContent =
+          info.NumberOfReboots ? info.NumberOfReboots + ' reboots' : '';
+      }
+    }
+  } catch (e) {}
+}
+
+async function loadTime() {
+  try {
+    const t = await api('/api/time');
+    if (!t.error) {
+      document.getElementById('lbTime').textContent = t.time || '--';
+      document.getElementById('lbTimezone').textContent = t.timezone || '';
+    }
+  } catch (e) {}
+}
+
+async function loadDsl() {
+  try {
+    const d = await api('/api/dslrate');
+    if (!d.error) {
+      document.getElementById('dslDown').textContent = d.downstream;
+      document.getElementById('dslUp').textContent = d.upstream;
+    } else {
+      document.getElementById('dslDown').textContent = 'N/A';
+      document.getElementById('dslUp').textContent = 'N/A';
+    }
+  } catch (e) {}
+}
+
+async function loadHosts() {
+  const body = document.getElementById('hostsBody');
+  body.innerHTML = '<tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr>';
+  try {
+    const hosts = await api('/api/hosts');
+    if (Array.isArray(hosts)) {
+      body.innerHTML = hosts.map(h => `<tr>
+        <td>${esc(h.name || '(unknown)')}</td>
+        <td class="mono">${esc(h.ip)}</td>
+        <td class="mono">${esc(h.mac)}</td>
+        <td>${esc(h.interface)}</td>
+        <td>${h.active
+          ? '<span class="badge badge-green">Active</span>'
+          : '<span class="badge badge-red">Inactive</span>'}</td>
+      </tr>`).join('');
+    } else {
+      body.innerHTML = '<tr><td colspan="5">No data</td></tr>';
+    }
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="5">Error loading hosts</td></tr>';
+  }
+}
+
+async function loadDevices() {
+  const body = document.getElementById('devicesBody');
+  body.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>';
+  try {
+    const devs = await api('/api/devices');
+    if (Array.isArray(devs)) {
+      body.innerHTML = devs.map(d => `<tr>
+        <td>${esc(d.Name || '(unknown)')}</td>
+        <td class="mono">${esc(d.IPAddress || '')}</td>
+        <td class="mono">${esc(d.PhysAddress || '')}</td>
+        <td>${esc(d.DeviceType || '')}</td>
+        <td>${d.Active
+          ? '<span class="badge badge-green">Yes</span>'
+          : '<span class="badge badge-red">No</span>'}</td>
+        <td>${esc(d.FirstSeen || '')}</td>
+      </tr>`).join('');
+    } else {
+      body.innerHTML = '<tr><td colspan="6">No data</td></tr>';
+    }
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="6">Error loading devices</td></tr>';
+  }
+}
+
+async function loadWifi() {
+  const body = document.getElementById('wifiBody');
+  body.innerHTML = '<tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr>';
+  try {
+    const nets = await api('/api/wifi');
+    if (Array.isArray(nets)) {
+      body.innerHTML = nets.map(n => `<tr>
+        <td>${esc(n.name)}</td>
+        <td><strong>${esc(n.ssid)}</strong></td>
+        <td class="mono">${esc(n.bssid)}</td>
+        <td><span class="badge badge-blue">${esc(n.security)}</span></td>
+        <td class="mono">${esc(n.passphrase)}</td>
+      </tr>`).join('');
+    } else {
+      body.innerHTML = '<tr><td colspan="5">No data</td></tr>';
+    }
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="5">Error loading WiFi</td></tr>';
+  }
+}
+
+async function loadDhcp() {
+  const body = document.getElementById('dhcpBody');
+  body.innerHTML = '<tr><td colspan="2" class="loading"><div class="spinner"></div></td></tr>';
+  try {
+    const leases = await api('/api/dhcp');
+    if (Array.isArray(leases)) {
+      if (leases.length === 0) {
+        body.innerHTML = '<tr><td colspan="2" style="color:var(--text2)">No static leases</td></tr>';
+      } else {
+        body.innerHTML = leases.map(l => `<tr>
+          <td class="mono">${esc(l.MACAddress || '')}</td>
+          <td class="mono">${esc(l.IPAddress || '')}</td>
+        </tr>`).join('');
+      }
+    } else {
+      body.innerHTML = '<tr><td colspan="2">No data</td></tr>';
+    }
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="2">Error loading DHCP</td></tr>';
+  }
+}
+
+async function loadNat() {
+  const body = document.getElementById('natBody');
+  body.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>';
+  try {
+    const rules = await api('/api/nat');
+    if (Array.isArray(rules)) {
+      if (rules.length === 0) {
+        body.innerHTML = '<tr><td colspan="6" style="color:var(--text2)">No port forwarding rules</td></tr>';
+      } else {
+        body.innerHTML = rules.map(r => `<tr>
+          <td>${esc(r.description)}</td>
+          <td>${protocolName(r.protocol)}</td>
+          <td class="mono">${esc(String(r.external_port))}</td>
+          <td class="mono">${esc(String(r.internal_port))}</td>
+          <td class="mono">${esc(r.destination_ip)}</td>
+          <td>${r.enabled
+            ? '<span class="badge badge-green">Yes</span>'
+            : '<span class="badge badge-red">No</span>'}</td>
+        </tr>`).join('');
+      }
+    } else {
+      body.innerHTML = '<tr><td colspan="6">No data</td></tr>';
+    }
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="6">Error loading NAT rules</td></tr>';
+  }
+}
+
+async function loadCalls() {
+  const body = document.getElementById('callsBody');
+  body.innerHTML = '<tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr>';
+  try {
+    const calls = await api('/api/calls');
+    if (Array.isArray(calls)) {
+      if (calls.length === 0) {
+        body.innerHTML = '<tr><td colspan="5" style="color:var(--text2)">No calls</td></tr>';
+      } else {
+        body.innerHTML = calls.map(c => {
+          const arrow = c.direction === 'incoming' ? '<span class="text-green">&larr; In</span>' : '<span class="text-red">&rarr; Out</span>';
+          const time = c.time ? new Date(c.time).toLocaleString() : c.time;
+          return `<tr>
+            <td>${arrow}</td>
+            <td class="mono">${esc(c.number || '(hidden)')}</td>
+            <td>${esc(time)}</td>
+            <td>${esc(c.duration)}</td>
+            <td><span class="badge badge-blue">${esc(c.type)}</span></td>
+          </tr>`;
+        }).join('');
+      }
+    } else {
+      body.innerHTML = '<tr><td colspan="5">No data</td></tr>';
+    }
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="5">Error loading calls</td></tr>';
+  }
+}
+
+async function wifiToggle(on) {
+  const endpoint = on ? '/api/wifi/on' : '/api/wifi/off';
+  await api(endpoint, {method: 'POST'});
+  loadWifi();
+}
+
+async function doRaw() {
+  const path = document.getElementById('rawPath').value.trim();
+  const paramsStr = document.getElementById('rawParams').value.trim();
+  const out = document.getElementById('rawOutput');
+  if (!path) return;
+
+  let params = null;
+  if (paramsStr) {
+    try { params = JSON.parse(paramsStr); }
+    catch (e) { out.textContent = 'Invalid JSON params: ' + e.message; return; }
+  }
+
+  out.textContent = 'Loading...';
+  try {
+    const r = await api('/api/raw', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({path, params}),
+    });
+    out.textContent = JSON.stringify(r, null, 2);
+  } catch (e) {
+    out.textContent = 'Error: ' + e.message;
+  }
+}
+
+function esc(s) {
+  if (s == null) return '';
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+
+function loadAll() {
+  loadInfo();
+  loadTime();
+  loadDsl();
+  loadHosts();
+  loadDevices();
+  loadWifi();
+  loadDhcp();
+  loadNat();
+  loadCalls();
+}
+
+// Auto-connect on load (uses saved session or ~/.sysbusrc config)
+(async function() {
+  try {
+    const info = await api('/api/info');
+    if (!info.error) {
+      setConnected(true);
+      loadAll();
+    }
+  } catch (e) {}
+})();
+</script>
+
+</body>
+</html>
